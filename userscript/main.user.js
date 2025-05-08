@@ -9,9 +9,18 @@
 // @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/functions.js
 // @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/api.js
 // @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/ui.js
+// @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/config.js
+// @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/goldbot.js
+// @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/core.js
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_registerMenuCommand
 // ==/UserScript==
 
-(function () {
+(function() {
     'use strict';
-    grepoBotLog('GrepoBot is actief 🚀');
+    // Laad configuratie en toon de UI
+    loadConfig();
+    ui.setup();
+    // De core-logica wordt in core.js al gestart
 })();
