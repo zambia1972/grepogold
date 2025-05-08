@@ -6,10 +6,10 @@
 // @match        *://*.grepolis.com/*
 // @grant        GM_addStyle
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
-// @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/functions.js
-// @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/api.js
-// @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/ui.js
-// @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/goldbot.js
+// @require      https://github.com/zambia1972/grepogold/blob/main/userscript/functions.js
+// @require      https://github.com/zambia1972/grepogold/blob/main/userscript/api.js
+// @require      https://github.com/zambia1972/grepogold/blob/main/userscript/ui.js
+// @require      https://github.com/zambia1972/grepogold/blob/main/userscript/goldbot.js
 // ==/UserScript==
 
 (function () {
