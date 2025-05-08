@@ -1,47 +1,41 @@
-// functions.js – Hulpfuncties voor GrepoBot
+// functions.js
 
-const GrepoBotFunctions = (() => {
-    /**
-     * Bereken afstand tussen twee steden (Pythagoras)
-     * @param {number} x1
-     * @param {number} y1
-     * @param {number} x2
-     * @param {number} y2
-     * @returns {number}
-     */
-    function calculateDistance(x1, y1, x2, y2) {
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
+/**
+ * Creëert een HTML-tabel gegeven kopteksten en rijen.
+ * @param {Array} headers Lijst van kolomkoppen (strings)
+ * @param {Array} rows    2D-array van rijen en cellen
+ * @returns {HTMLElement} <table> element
+ */
+function createTable(headers, rows) {
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.border = '1';
 
-    /**
-     * Format getal met punten (duizendtallen)
-     * @param {number} num
-     * @returns {string}
-     */
-    function formatNumber(num) {
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
+  const thead = table.createTHead();
+  const headerRow = thead.insertRow();
+  headers.forEach(text => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    headerRow.appendChild(th);
+  });
 
-    /**
-     * Haal coördinaten uit stad-string (bijv. "Athene (456|321)")
-     * @param {string} name
-     * @returns {[number, number] | null}
-     */
-    function extractCoords(name) {
-        const match = name.match(/\((\d+)\|(\d+)\)/);
-        return match ? [parseInt(match[1]), parseInt(match[2])] : null;
-    }
+  const tbody = table.createTBody();
+  rows.forEach(rowData => {
+    const row = tbody.insertRow();
+    rowData.forEach(cellData => {
+      const cell = row.insertCell();
+      cell.textContent = cellData;
+    });
+  });
 
-    return {
-        calculateDistance,
-        formatNumber,
-        extractCoords
-    };
-})();
+  return table;
+}
 
-// Voor gebruik in andere modules:
-// GrepoBotFunctions.calculateDistance(100, 200, 120, 240);
-// GrepoBotFunctions.formatNumber(1234567);
-// GrepoBotFunctions.extractCoords("Sparta (123|456)");
+/**
+ * Sluimerfunctie: wacht een opgegeven aantal milliseconden.
+ * @param {number} ms Milliseconden om te wachten
+ * @returns {Promise} Promise die resolves na de opgegeven tijd
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

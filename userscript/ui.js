@@ -1,136 +1,94 @@
-// ui.js – UI-componenten, logging, popup en setup voor GrepoBot
+// ui.js
+const ui = {
+  /**
+   * Bouw en toon het hoofdvenster van de UI.
+   */
+  setup() {
+    const container = document.createElement('div');
+    container.id = 'grepoBotUI';
+    container.style.position = 'fixed';
+    container.style.top = '50px';
+    container.style.right = '10px';
+    container.style.backgroundColor = 'white';
+    container.style.border = '1px solid #000';
+    container.style.padding = '10px';
+    container.style.zIndex = 1000;
 
-const GrepoBotUI = (() => {
-    let popup;
+    container.innerHTML = `<h2>GrepoBot Bedieningspaneel</h2>`;
 
-    function createButtonPanel() {
-        const panel = document.createElement("div");
-        panel.id = "grepobot-ui-panel";
-        panel.style.position = "fixed";
-        panel.style.top = "60px";
-        panel.style.left = "10px";
-        panel.style.zIndex = 9999;
-        panel.style.backgroundColor = "#222";
-        panel.style.border = "2px solid #888";
-        panel.style.padding = "10px";
-        panel.style.borderRadius = "8px";
-        panel.style.color = "white";
-        panel.style.fontSize = "14px";
-        panel.innerHTML = `
-            <div style="margin-bottom: 5px;"><b>GrepoBot</b></div>
-            <button id="grepobot-open" style="margin-right: 5px;">⚙ Open</button>
-            <button id="grepobot-start" style="margin-right: 5px;">▶ Start</button>
-            <button id="grepobot-stop">■ Stop</button>
-            <div id="grepobot-log" style="margin-top: 10px; max-height: 150px; overflow-y: auto;"></div>
-        `;
-        document.body.appendChild(panel);
+    // Configuratieformulier
+    container.innerHTML += `
+      <div>
+        <label>Vertraging (s): <input id="gb-delay" type="number" value="${config.delay}" style="width:50px;"></label><br>
+        <label>Goudlimiet: <input id="gb-goudLimit" type="number" value="${config.goudLimit}" style="width:60px;"></label><br>
+        <label>Auto Start: <input id="gb-autoStart" type="checkbox" ${config.autoStart ? 'checked' : ''}></label><br>
+        <button id="gb-saveConfig">Opslaan</button>
+      </div>
+      <hr>
+      <button id="gb-start">Start GoldBot</button>
+      <button id="gb-stop">Stop GoldBot</button>
+      <hr>
+      <h3>Steden</h3><div id="citiesTable"></div>
+      <h3>Spelers</h3><div id="playersTable"></div>
+      <h3>Allianties</h3><div id="alliancesTable"></div>
+      <h3>Aanvallen</h3><div id="attacksTable"></div>
+    `;
 
-        document.getElementById("grepobot-open").addEventListener("click", togglePopup);
-        document.getElementById("grepobot-start").addEventListener("click", () => GrepoBotGold.start());
-        document.getElementById("grepobot-stop").addEventListener("click", () => GrepoBotGold.stop());
-    }
+    document.body.appendChild(container);
 
-    function createPopup() {
-        popup = document.createElement("div");
-        popup.id = "grepobot-popup";
-        popup.style.position = "fixed";
-        popup.style.top = "120px";
-        popup.style.left = "50%";
-        popup.style.transform = "translateX(-50%)";
-        popup.style.zIndex = 10000;
-        popup.style.backgroundColor = "#333";
-        popup.style.border = "2px solid #888";
-        popup.style.padding = "20px";
-        popup.style.borderRadius = "10px";
-        popup.style.color = "white";
-        popup.style.minWidth = "400px";
-        popup.style.display = "none";
+    // Evenementen voor knoppen
+    document.getElementById('gb-saveConfig').addEventListener('click', () => {
+      config.delay = parseInt(document.getElementById('gb-delay').value, 10);
+      config.goudLimit = parseInt(document.getElementById('gb-goudLimit').value, 10);
+      config.autoStart = document.getElementById('gb-autoStart').checked;
+      saveConfig();
+      alert('Configuratie opgeslagen.');
+    });
+    document.getElementById('gb-start').addEventListener('click', () => GoldBot.start());
+    document.getElementById('gb-stop').addEventListener('click', () => GoldBot.stop());
 
-        popup.innerHTML = `
-            <h3>Instellingen</h3>
-            <label>Delay (ms): <input id="grepobot-delay" type="number" value="1000" style="width:80px;"></label><br><br>
-            <label><input id="grepobot-debug" type="checkbox"> Debug modus</label><br><br>
-            <label>Gold Limiet: <input id="grepobot-gold-limit" type="number" value="2000" style="width:80px;"></label><br><br>
-            <label><input id="grepobot-auto-start" type="checkbox"> Start automatisch</label><br><br>
-            <label><input id="grepobot-auto-collect" type="checkbox"> Verzamel automatisch grondstoffen</label><br><br>
-            <label><input id="grepobot-gold-trade" type="checkbox"> Activeer goudhandel</label><br><br>
-            <button id="grepobot-save">Opslaan</button>
-            <button id="grepobot-close" style="float: right;">Sluiten</button>
-        `;
-        document.body.appendChild(popup);
+    // Tabellen vullen
+    this.refreshTables();
+  },
 
-        document.getElementById("grepobot-save").addEventListener("click", saveSettings);
-        document.getElementById("grepobot-close").addEventListener("click", togglePopup);
-    }
+  /**
+   * Ververs de gegevens in de tabellen voor steden, spelers, allianties en aanvallen.
+   */
+  refreshTables() {
+    // Steden
+    const cities = api.getCities();
+    const cityHeaders = ['ID', 'Naam', 'Goud'];
+    const cityRows = cities.map(c => [c.id, c.naam, c.goud]);
+    const cityTable = createTable(cityHeaders, cityRows);
+    const cityContainer = document.getElementById('citiesTable');
+    cityContainer.innerHTML = ''; 
+    cityContainer.appendChild(cityTable);
 
-    function togglePopup() {
-        if (!popup) return;
-        popup.style.display = popup.style.display === "none" ? "block" : "none";
-    }
+    // Spelers
+    const players = api.getPlayers();
+    const playerHeaders = ['ID', 'Naam', 'Rang'];
+    const playerRows = players.map(p => [p.id, p.naam, p.rang]);
+    const playerTable = createTable(playerHeaders, playerRows);
+    const playerContainer = document.getElementById('playersTable');
+    playerContainer.innerHTML = '';
+    playerContainer.appendChild(playerTable);
 
-    function saveSettings() {
-        const delay = parseInt(document.getElementById("grepobot-delay").value, 10);
-        const debug = document.getElementById("grepobot-debug").checked;
-        const goldLimit = parseInt(document.getElementById("grepobot-gold-limit").value, 10);
-        const autoStart = document.getElementById("grepobot-auto-start").checked;
-        const autoCollect = document.getElementById("grepobot-auto-collect").checked;
-        const goldTrade = document.getElementById("grepobot-gold-trade").checked;
+    // Allianties
+    const alliances = api.getAlliances();
+    const allianceHeaders = ['ID', 'Naam', 'Leden'];
+    const allianceRows = alliances.map(a => [a.id, a.naam, a.leden]);
+    const allianceTable = createTable(allianceHeaders, allianceRows);
+    const allianceContainer = document.getElementById('alliancesTable');
+    allianceContainer.innerHTML = '';
+    allianceContainer.appendChild(allianceTable);
 
-        localStorage.setItem("grepobot-delay", delay);
-        localStorage.setItem("grepobot-debug", debug);
-        localStorage.setItem("grepobot-gold-limit", goldLimit);
-        localStorage.setItem("grepobot-auto-start", autoStart);
-        localStorage.setItem("grepobot-auto-collect", autoCollect);
-        localStorage.setItem("grepobot-gold-trade", goldTrade);
-
-        log("Instellingen opgeslagen.");
-        togglePopup();
-    }
-
-    function loadSettings() {
-        const delay = localStorage.getItem("grepobot-delay") || 1000;
-        const debug = localStorage.getItem("grepobot-debug") === "true";
-        const goldLimit = localStorage.getItem("grepobot-gold-limit") || 2000;
-        const autoStart = localStorage.getItem("grepobot-auto-start") === "true";
-        const autoCollect = localStorage.getItem("grepobot-auto-collect") === "true";
-        const goldTrade = localStorage.getItem("grepobot-gold-trade") === "true";
-
-        if (document.getElementById("grepobot-delay")) {
-            document.getElementById("grepobot-delay").value = delay;
-            document.getElementById("grepobot-debug").checked = debug;
-            document.getElementById("grepobot-gold-limit").value = goldLimit;
-            document.getElementById("grepobot-auto-start").checked = autoStart;
-            document.getElementById("grepobot-auto-collect").checked = autoCollect;
-            document.getElementById("grepobot-gold-trade").checked = goldTrade;
-        }
-        log("Instellingen geladen.");
-    }
-
-    function log(message) {
-        const logBox = document.getElementById("grepobot-log");
-        if (!logBox) return;
-        const entry = document.createElement("div");
-        entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        logBox.prepend(entry);
-    }
-
-    function init() {
-        createButtonPanel();
-        createPopup();
-        loadSettings();
-        log("UI geladen.");
-    }
-
-    return {
-        init,
-        log,
-        saveSettings,
-        loadSettings
-    };
-})();
-
-window.addEventListener("load", () => {
-    setTimeout(() => {
-        GrepoBotUI.init();
-    }, 1500);
-});
+    // Aanvallen
+    const attacks = api.getAttacks();
+    const attackHeaders = ['Bron-ID', 'Doel-ID', 'Tijd'];
+    const attackRows = attacks.map(at => [at.source, at.target, at.time]);
+    const attackTable = createTable(attackHeaders, attackRows);
+    const attackContainer = document.getElementById('attacksTable');
+    attackContainer.innerHTML = '';
+    attackContainer.appendChild(attackTable);
+  }
+};
