@@ -1,128 +1,130 @@
-// ==UserScript==
-// @name         GrepoBot UI Loader
-// @namespace    https://grepolis.com/
-// @version      1.0
-// @description  Laadt het modulaire GrepoBot dashboard in Grepolis
-// @author       JouwNaam
-// @match        *://*.grepolis.com/*
-// @grant        GM_addStyle
-// @require      https://code.jquery.com/jquery-3.6.0.min.js
-// ==/UserScript==
+// ui.js – Gebruikersinterface: popup, tabs, logging
 
-(function() {
-    'use strict';
+const GrepoBotUI = (() => {
+    let logBox;
+    let popup;
 
-    // Voeg hoofdknop toe
-    const toggleBtn = document.createElement("button");
-    toggleBtn.id = "grepoBotToggle";
-    toggleBtn.textContent = "🤖 GrepoBot";
-    document.body.appendChild(toggleBtn);
+    function createUI() {
+        if (document.getElementById("grepoBotPopup")) return; // al aanwezig
 
-    // Voeg popupcontainer toe
-    const popup = document.createElement("div");
-    popup.id = "grepoBotPopup";
-    popup.innerHTML = `
-        <div id="grepoBotHeader">
-            <span id="grepoBotClose">✖</span>
-            <h2>GrepoBot Dashboard</h2>
-        </div>
-        <div id="grepoBotTabs">
-            <button data-tab="tab-cities">🏙️ Steden</button>
-            <button data-tab="tab-players">👤 Spelers</button>
-            <button data-tab="tab-alliances">🛡️ Allianties</button>
-            <button data-tab="tab-goldbot">💰 GoldBot</button>
-        </div>
-        <div id="grepoBotContent">
-            <div id="tab-cities" class="grepoBotTab"></div>
-            <div id="tab-players" class="grepoBotTab"></div>
-            <div id="tab-alliances" class="grepoBotTab"></div>
-            <div id="tab-goldbot" class="grepoBotTab"></div>
-        </div>
-        <pre id="grepoBotLog"></pre>
-    `;
-    document.body.appendChild(popup);
+        popup = document.createElement("div");
+        popup.id = "grepoBotPopup";
+        popup.innerHTML = `
+            <style>
+                #grepoBotPopup {
+                    position: fixed;
+                    top: 80px;
+                    right: 30px;
+                    width: 400px;
+                    background: #2c3e50;
+                    color: #ecf0f1;
+                    border: 2px solid #34495e;
+                    padding: 15px;
+                    z-index: 99999;
+                    font-family: Arial;
+                    border-radius: 10px;
+                }
+                #grepoBotTabs button {
+                    background: #34495e;
+                    color: white;
+                    border: none;
+                    margin: 3px;
+                    padding: 5px 10px;
+                    cursor: pointer;
+                    border-radius: 6px;
+                }
+                #grepoBotTabs button.active {
+                    background: #1abc9c;
+                }
+                #grepoBotContent > div { display: none; }
+                #grepoBotContent > div.active { display: block; }
+                #grepoBotLog {
+                    margin-top: 10px;
+                    max-height: 150px;
+                    overflow-y: auto;
+                    background: #1f2d3a;
+                    padding: 5px;
+                    font-size: 12px;
+                    border-radius: 5px;
+                }
+            </style>
+            <div id="grepoBotTabs">
+                <button data-tab="cities">Steden</button>
+                <button data-tab="players">Spelers</button>
+                <button data-tab="alliances">Allianties</button>
+                <button data-tab="gold">GoldBot</button>
+            </div>
+            <div id="grepoBotContent">
+                <div id="tab-cities">[Steden-module komt hier]</div>
+                <div id="tab-players">[Spelers-module komt hier]</div>
+                <div id="tab-alliances">[Allianties-module komt hier]</div>
+                <div id="tab-gold">
+                    <button id="startGold">Start GoldBot</button>
+                    <button id="stopGold">Stop</button>
+                </div>
+            </div>
+            <div id="grepoBotLog">[Log klaar]</div>
+        `;
+        document.body.appendChild(popup);
 
-    // Stijlen
-    GM_addStyle(`
-        #grepoBotToggle {
-            position: fixed;
-            top: 120px;
-            left: 10px;
-            z-index: 9999;
-            background-color: #2c3e50;
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        #grepoBotPopup {
-            display: none;
-            position: fixed;
-            top: 100px;
-            left: 80px;
-            width: 700px;
-            background: #f9f9f9;
-            border: 2px solid #333;
-            z-index: 9999;
-            padding: 0;
-            font-family: Arial;
-        }
-        #grepoBotHeader {
-            background: #34495e;
-            color: white;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #grepoBotClose {
-            cursor: pointer;
-        }
-        #grepoBotTabs button {
-            padding: 6px 12px;
-            margin: 0;
-            border: none;
-            background: #ddd;
-            cursor: pointer;
-        }
-        #grepoBotTabs button.active {
-            background: #bbb;
-        }
-        .grepoBotTab {
-            display: none;
-            padding: 10px;
-        }
-        .grepoBotTab.active {
-            display: block;
-        }
-        #grepoBotLog {
-            background: black;
-            color: #00FF00;
-            height: 150px;
-            overflow-y: auto;
-            padding: 10px;
-            margin: 0;
-        }
-    `);
+        // tab functionaliteit
+        popup.querySelectorAll('#grepoBotTabs button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                popup.querySelectorAll('#grepoBotTabs button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.getAttribute('data-tab');
+                popup.querySelectorAll('#grepoBotContent > div').forEach(d => d.classList.remove('active'));
+                popup.querySelector(`#tab-${tab}`).classList.add('active');
+            });
+        });
 
-    // Functionaliteit
-    $("#grepoBotToggle").on("click", () => $("#grepoBotPopup").show());
-    $("#grepoBotClose").on("click", () => $("#grepoBotPopup").hide());
-    $("#grepoBotTabs button").on("click", function() {
-        const tab = $(this).data("tab");
-        $(".grepoBotTab").removeClass("active");
-        $("#grepoBotTabs button").removeClass("active");
-        $(this).addClass("active");
-        $("#" + tab).addClass("active");
-    });
+        // standaard eerste tab
+        popup.querySelector('#grepoBotTabs button').click();
 
-    // Globale logger
-    unsafeWindow.grepoBotLog = function(msg) {
-        const line = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-        $("#grepoBotLog").append(line).scrollTop($("#grepoBotLog")[0].scrollHeight);
+        // goudbot knoppen
+        document.getElementById("startGold").addEventListener("click", () => GrepoBotGold.start());
+        document.getElementById("stopGold").addEventListener("click", () => GrepoBotGold.stop());
+
+        logBox = document.getElementById("grepoBotLog");
     }
 
-    // Init-log
-    grepoBotLog("GrepoBot interface geladen. Modules kunnen nu worden geladen.");
+    function toggle() {
+        if (!popup) createUI();
+        popup.style.display = popup.style.display === "none" ? "block" : "none";
+    }
+
+    function log(message) {
+        if (!logBox) return;
+        const entry = document.createElement("div");
+        entry.textContent = new Date().toLocaleTimeString() + ": " + message;
+        logBox.appendChild(entry);
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    // Inject toggle button
+    function injectButton() {
+        const btn = document.createElement("button");
+        btn.textContent = "🤖 GrepoBot";
+        btn.style.position = "fixed";
+        btn.style.top = "30px";
+        btn.style.right = "30px";
+        btn.style.zIndex = 99999;
+        btn.style.background = "#1abc9c";
+        btn.style.border = "none";
+        btn.style.padding = "8px 12px";
+        btn.style.borderRadius = "8px";
+        btn.style.color = "white";
+        btn.style.cursor = "pointer";
+        btn.addEventListener("click", toggle);
+        document.body.appendChild(btn);
+    }
+
+    // direct starten
+    injectButton();
+
+    return {
+        createUI,
+        toggle,
+        log
+    };
 })();
