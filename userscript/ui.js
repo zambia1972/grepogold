@@ -52,6 +52,8 @@ const GrepoBotUI = (() => {
             <label><input id="grepobot-debug" type="checkbox"> Debug modus</label><br><br>
             <label>Gold Limiet: <input id="grepobot-gold-limit" type="number" value="2000" style="width:80px;"></label><br><br>
             <label><input id="grepobot-auto-start" type="checkbox"> Start automatisch</label><br><br>
+            <label><input id="grepobot-auto-collect" type="checkbox"> Verzamel automatisch grondstoffen</label><br><br>
+            <label><input id="grepobot-gold-trade" type="checkbox"> Activeer goudhandel</label><br><br>
             <button id="grepobot-save">Opslaan</button>
             <button id="grepobot-close" style="float: right;">Sluiten</button>
         `;
@@ -71,11 +73,15 @@ const GrepoBotUI = (() => {
         const debug = document.getElementById("grepobot-debug").checked;
         const goldLimit = parseInt(document.getElementById("grepobot-gold-limit").value, 10);
         const autoStart = document.getElementById("grepobot-auto-start").checked;
+        const autoCollect = document.getElementById("grepobot-auto-collect").checked;
+        const goldTrade = document.getElementById("grepobot-gold-trade").checked;
 
         localStorage.setItem("grepobot-delay", delay);
         localStorage.setItem("grepobot-debug", debug);
         localStorage.setItem("grepobot-gold-limit", goldLimit);
         localStorage.setItem("grepobot-auto-start", autoStart);
+        localStorage.setItem("grepobot-auto-collect", autoCollect);
+        localStorage.setItem("grepobot-gold-trade", goldTrade);
 
         log("Instellingen opgeslagen.");
         togglePopup();
@@ -86,12 +92,16 @@ const GrepoBotUI = (() => {
         const debug = localStorage.getItem("grepobot-debug") === "true";
         const goldLimit = localStorage.getItem("grepobot-gold-limit") || 2000;
         const autoStart = localStorage.getItem("grepobot-auto-start") === "true";
+        const autoCollect = localStorage.getItem("grepobot-auto-collect") === "true";
+        const goldTrade = localStorage.getItem("grepobot-gold-trade") === "true";
 
         if (document.getElementById("grepobot-delay")) {
             document.getElementById("grepobot-delay").value = delay;
             document.getElementById("grepobot-debug").checked = debug;
             document.getElementById("grepobot-gold-limit").value = goldLimit;
             document.getElementById("grepobot-auto-start").checked = autoStart;
+            document.getElementById("grepobot-auto-collect").checked = autoCollect;
+            document.getElementById("grepobot-gold-trade").checked = goldTrade;
         }
         log("Instellingen geladen.");
     }
