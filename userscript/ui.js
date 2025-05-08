@@ -50,6 +50,8 @@ const GrepoBotUI = (() => {
             <h3>Instellingen</h3>
             <label>Delay (ms): <input id="grepobot-delay" type="number" value="1000" style="width:80px;"></label><br><br>
             <label><input id="grepobot-debug" type="checkbox"> Debug modus</label><br><br>
+            <label>Gold Limiet: <input id="grepobot-gold-limit" type="number" value="2000" style="width:80px;"></label><br><br>
+            <label><input id="grepobot-auto-start" type="checkbox"> Start automatisch</label><br><br>
             <button id="grepobot-save">Opslaan</button>
             <button id="grepobot-close" style="float: right;">Sluiten</button>
         `;
@@ -67,8 +69,14 @@ const GrepoBotUI = (() => {
     function saveSettings() {
         const delay = parseInt(document.getElementById("grepobot-delay").value, 10);
         const debug = document.getElementById("grepobot-debug").checked;
+        const goldLimit = parseInt(document.getElementById("grepobot-gold-limit").value, 10);
+        const autoStart = document.getElementById("grepobot-auto-start").checked;
+
         localStorage.setItem("grepobot-delay", delay);
         localStorage.setItem("grepobot-debug", debug);
+        localStorage.setItem("grepobot-gold-limit", goldLimit);
+        localStorage.setItem("grepobot-auto-start", autoStart);
+
         log("Instellingen opgeslagen.");
         togglePopup();
     }
@@ -76,9 +84,14 @@ const GrepoBotUI = (() => {
     function loadSettings() {
         const delay = localStorage.getItem("grepobot-delay") || 1000;
         const debug = localStorage.getItem("grepobot-debug") === "true";
+        const goldLimit = localStorage.getItem("grepobot-gold-limit") || 2000;
+        const autoStart = localStorage.getItem("grepobot-auto-start") === "true";
+
         if (document.getElementById("grepobot-delay")) {
             document.getElementById("grepobot-delay").value = delay;
             document.getElementById("grepobot-debug").checked = debug;
+            document.getElementById("grepobot-gold-limit").value = goldLimit;
+            document.getElementById("grepobot-auto-start").checked = autoStart;
         }
         log("Instellingen geladen.");
     }
