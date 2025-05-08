@@ -9,6 +9,7 @@
 // @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/functions.js
 // @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/api.js
 // @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/ui.js
+// @require      https://raw.githubusercontent.com/jouwgebruikersnaam/GrepoBot/main/userscript/goldbot.js
 // ==/UserScript==
 
 (function () {
